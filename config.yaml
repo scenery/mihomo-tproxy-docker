@@ -1,0 +1,58 @@
+##########################################
+##  Mihomo (Clash.Meta) documentation:  ##
+##  https://wiki.metacubex.one/config/  ##
+##########################################
+# mixed-port: 7890
+# redir-port: 7892
+# Do not modify lines from 8 to 14
+tproxy-port: 7893 
+allow-lan: true
+bind-address: '*'
+iptables:
+  enable: false
+routing-mark: 255
+external-ui: ui
+external-controller: 0.0.0.0:9090
+# secret: ""
+mode: rule
+log-level: info
+ipv6: false
+profile:
+  store-selected: true
+# keep-alive-interval: 60 # TCP keep alive interval
+use-hosts: true
+hosts:
+  'localhost': 127.0.0.1
+geox-url:
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country-lite.mmdb
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite-lite.dat
+  # geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+dns:
+  enable: true
+  prefer-h3: true
+  ipv6: false
+  listen: 0.0.0.0:53 # Do not modify this address
+  enhanced-mode: redir-host # or fake-ip
+  # fake-ip-range: 198.18.0.1/16
+  # fake-ip-filter:
+  #   - '*.lan'
+  #   - localhost.ptlogin2.qq.com
+  default-nameserver:
+    - 223.6.6.6
+    - 119.29.29.29
+  nameserver: # Default DNS for non-CN websites, use unpolluted DNS for redir-host mode.
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  nameserver-policy:
+    "geosite:cn,private": # DNS for CN websites
+      - https://dns.alidns.com/dns-query
+      - tls://dot.pub
+
+proxies:
+  # ...
+
+proxy-groups:
+  # ...
+
+rules:
+  # ...
