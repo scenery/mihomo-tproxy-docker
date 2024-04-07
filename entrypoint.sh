@@ -32,53 +32,6 @@ setup_nftables() {
     nft add rule clash DIVERT meta l4proto tcp socket transparent 1 meta mark set 1 accept
 }
 
-setup_iptables() {
-    set -ex
-    # Create a new chain
-    iptables -t mangle -N CLASH
-    # Skip packets to local/private address
-    iptables -t mangle -A CLASH -d 0.0.0.0/8 -j RETURN
-    iptables -t mangle -A CLASH -d 10.0.0.0/8 -j RETURN
-    iptables -t mangle -A CLASH -d 127.0.0.0/8 -j RETURN
-    iptables -t mangle -A CLASH -d 169.254.0.0/16 -j RETURN
-    iptables -t mangle -A CLASH -d 172.16.0.0/12 -j RETURN
-    iptables -t mangle -A CLASH -d 192.168.0.0/16 -j RETURN
-    iptables -t mangle -A CLASH -d 224.0.0.0/4 -j RETURN
-    iptables -t mangle -A CLASH -d 240.0.0.0/4 -j RETURN
-    # Avoid circular redirect
-    iptables -t mangle -A CLASH -j RETURN -m mark --mark 0xff
-    # Mark all other packets as 1 and forward to port 7893
-    iptables -t mangle -A CLASH -p tcp -j TPROXY --on-port 7893 --tproxy-mark 1
-    iptables -t mangle -A CLASH -p udp -j TPROXY --on-port 7893 --tproxy-mark 1
-    # Apply rules
-    iptables -t mangle -A PREROUTING -j CLASH
-    # Disable QUIC (UDP 443)
-    if [ "$QUIC" = "false" ]; then
-        iptables -A INPUT -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
-    fi
-    # Forward local traffic
-    if [ "$CONTAINER_PROXY" = "true" ]; then
-        iptables -t mangle -N CLASH_LOCAL
-        iptables -t mangle -A CLASH_LOCAL -d 0.0.0.0/8 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 10.0.0.0/8 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 169.254.0.0/16 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 172.16.0.0/12 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
-        iptables -t mangle -A CLASH_LOCAL -j RETURN -m mark --mark 0xff
-        iptables -t mangle -A CLASH_LOCAL -p udp -j MARK --set-mark 1
-        iptables -t mangle -A CLASH_LOCAL -p tcp -j MARK --set-mark 1
-        iptables -t mangle -A OUTPUT -j CLASH_LOCAL
-    fi
-    # Redirect connected requests to optimize TPROXY performance
-    iptables -t mangle -N DIVERT
-    iptables -t mangle -A DIVERT -j MARK --set-mark 1
-    iptables -t mangle -A DIVERT -j ACCEPT
-    iptables -t mangle -I PREROUTING -p tcp -m socket -j DIVERT
-}
-
 if [[ "$QUIC" != "true" && "$QUIC" != "false" ]]; then
     echo "Error: '\$QUIC' Must be 'true' or 'false'."
     exit 1
@@ -93,16 +46,7 @@ fi
 ip rule add fwmark 1 lookup 100
 ip route add local 0.0.0.0/0 dev lo table 100
 
-if [ "$TABLES" = "nftables" ]; then
-    echo "Using nftables..."
-    setup_nftables
-elif [ "$TABLES" = "iptables" ]; then
-    echo "Using iptables..."
-    setup_iptables
-else
-    echo "Error: '\$TABLES' Must be 'nftables' or 'iptables'."
-    exit 1
-fi
+setup_nftables
 
 echo "*** Starting Mihomo ***"
 exec "$@"

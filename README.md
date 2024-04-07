@@ -2,7 +2,7 @@
 
 A simple Mihomo (formerly known as Clash.Meta) transparent proxy Docker image.
 
-You can build and deploy this image on your local Linux device (such as a Raspberry Pi or NAS) as a bypass gateway. Support both TCP and UDP redirecting using nftables/iptables, with the option to block QUIC (UDP 443) traffic. Since it runs within a Docker container, there's no need to worry about affecting the host network.
+You can build and deploy this image on your local Linux device (such as a Raspberry Pi or NAS) as a bypass gateway. Support both TCP and UDP redirecting using nftables, with the option to block QUIC (UDP 443) traffic. Since it runs within a Docker container, there's no need to worry about affecting the host network.
 
 ## Getting started
 
@@ -25,14 +25,6 @@ Download or clone this repository to your local machine, and then build the imag
 docker build -t mihomo:latest .
 ```
 
-By default, the image uses nftables. If you prefer iptables, run the following command instead:
-
-```
-docker build --build-arg TABLES=iptables -t mihomo:latest .
-```
-
-Please note: To minimize image size, only one of nftables and iptables will be installed, and it must match the configuration in the provided  `docker-compose.yaml` file.
-
 ## Usage
 
 Configure  `docker-compose.yaml` file:
@@ -52,7 +44,6 @@ services:
       homenet:
         ipv4_address: 192.168.31.32
     environment:
-      TABLES: "nftables" # nftables or iptables (must match --build-arg)
       QUIC: "true" # allow quic (udp 443)
       CONTAINER_PROXY: "false" # forward the container's own traffic to tproxy
     volumes:

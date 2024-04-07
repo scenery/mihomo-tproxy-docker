@@ -14,7 +14,6 @@ services:
       homenet:
         ipv4_address: 192.168.2.2 # container (gateway) ip address
     environment:
-      TABLES: "nftables" # nftables or iptables (must match --build-arg)
       QUIC: "false" # allow quic (udp 443)
       CONTAINER_PROXY: "false" # forward the container's own traffic to tproxy
     volumes:

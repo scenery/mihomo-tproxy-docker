@@ -1,6 +1,5 @@
 FROM alpine:latest
 
-ARG TABLES="nftables"
 ARG TZ="Asia/Shanghai"
 
 WORKDIR /mihomo
@@ -8,7 +7,7 @@ WORKDIR /mihomo
 RUN echo "Starting the configuration..." && \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
     apk update && \
-    apk add --no-cache ${TABLES} ca-certificates tzdata unzip && \
+    apk add --no-cache nftables ca-certificates tzdata unzip && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
 	echo ${TZ} > /etc/timezone && \
     mkdir /mihomo/config && \
