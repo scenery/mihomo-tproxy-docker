@@ -9,17 +9,26 @@ setup_nftables() {
     # Create a new table
     nft add table clash
     nft add chain clash PREROUTING { type filter hook prerouting priority 0 \; }
+
     # Skip packets to local/private address
     nft add rule clash PREROUTING ip daddr {0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 240.0.0.0/4} return
+    # Skip CN IP address
+    if [ "$SKIP_CNIP" = "true" ]; then
+        CN_IP=$(awk '!/^#/ {ip=ip $1 ", "} END {sub(/, $/, "", ip); print ip}' /mihomo/config/cn_cidr.txt)
+        nft add rule clash PREROUTING ip daddr {$CN_IP} return
+    fi
+
     # Avoid circular redirect
     nft add rule clash PREROUTING mark 0xff return
     # Mark all other packets as 1 and forward to port 7893
     nft add rule clash PREROUTING meta l4proto {tcp, udp} mark set 1 tproxy to :7893 accept
+
     # Disable QUIC (UDP 443)
     if [ "$QUIC" = "false" ]; then
         nft add chain clash INPUT { type filter hook input priority 0 \; }
         nft add rule clash INPUT udp dport 443 reject
     fi
+
     # Forward local traffic
     if [ "$CONTAINER_PROXY" = "true" ]; then
         nft add chain clash OUTPUT { type route hook output priority 0 \; }
@@ -27,10 +36,16 @@ setup_nftables() {
         nft add rule clash OUTPUT mark 0xff return
         nft add rule clash OUTPUT meta l4proto {tcp, udp} mark set 1 accept
     fi
+
     # Redirect connected requests to optimize TPROXY performance
     nft add chain clash DIVERT { type filter hook prerouting priority -150 \; }
     nft add rule clash DIVERT meta l4proto tcp socket transparent 1 meta mark set 1 accept
 }
+
+if [[ "$SKIP_CNIP" != "true" && "$SKIP_CNIP" != "false" ]]; then
+    echo "Error: '\$SKIP_CNIP' Must be 'true' or 'false'."
+    exit 1
+fi
 
 if [[ "$QUIC" != "true" && "$QUIC" != "false" ]]; then
     echo "Error: '\$QUIC' Must be 'true' or 'false'."

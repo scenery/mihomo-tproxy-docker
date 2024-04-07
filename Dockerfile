@@ -4,7 +4,7 @@ ARG TZ="Asia/Shanghai"
 
 WORKDIR /mihomo
 
-RUN echo "Starting the configuration..." && \
+RUN echo "Starting..." && \
     sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
     apk update && \
     apk add --no-cache nftables ca-certificates tzdata unzip && \

@@ -2,7 +2,7 @@
 
 A simple Mihomo (formerly known as Clash.Meta) transparent proxy Docker image.
 
-You can build and deploy this image on your local Linux device (such as a Raspberry Pi or NAS) as a bypass gateway. Support both TCP and UDP redirecting using nftables, with the option to block QUIC (UDP 443) traffic. Since it runs within a Docker container, there's no need to worry about affecting the host network.
+You can build and deploy this image on your local Linux device, such as a Raspberry Pi or NAS, as a bypass gateway. It supports both TCP and UDP redirection using nftables, with the option to block QUIC (UDP 443) traffic and bypass forwarding CN IPs to the Mihomo kernel. Since it runs within a Docker container, there's no need to worry about affecting the host network.
 
 ## Getting started
 
@@ -42,12 +42,14 @@ services:
       - NET_ADMIN
     networks:
       homenet:
-        ipv4_address: 192.168.31.32
+        ipv4_address: 192.168.2.2
     environment:
       QUIC: "true" # allow quic (udp 443)
       CONTAINER_PROXY: "false" # forward the container's own traffic to tproxy
+      SKIP_CNIP: "false" # bypass forwarding cn ip to the mihomo kernel (only valid for redir-host mode)
     volumes:
       - './config.yaml:/mihomo/config/config.yaml'
+      - './cn_cidr.txt:/mihomo/config/cn_cidr.txt'
 
 networks:
   mihomovlan:
@@ -76,6 +78,14 @@ If there are no errors, press Ctrl + C to stop the container. Then restart it in
 docker compose up -d
 ```
 
+You can download the latest [CN IP list](https://github.com/misakaio/chnroutes2/blob/master/chnroutes.txt) and replace the `cn_cidr.txt` file with it (the filename cannot be changed). After updating the `config.yaml` or `cn_cidr.txt`, simply restart the Docker container for the changes to take effect:
+
+```
+docker compose restart
+```
+
+*\* Setting up a crontab scheduled task for automatic updating and restarting is usually a good idea.*
+
 Finally, change the gateway and DNS server on your PC or phone to the Docker container's IP address. (e.g., 192.168.2.2).
 
 If everything is correct, you should be able to browse the internet now. You can conveniently manage mihomo via the built-in [web dashboard](https://github.com/MetaCubeX/metacubexd) accessible at http://192.168.2.2:9090.
@@ -84,3 +94,4 @@ If everything is correct, you should be able to browse the internet now. You can
 
 - [Dreamacro/clash](https://github.com/Dreamacro/clash)
 - [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)
+- [misakaio/chnroutes2](https://github.com/misakaio/chnroutes2)
