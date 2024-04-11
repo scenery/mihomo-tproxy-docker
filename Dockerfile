@@ -9,7 +9,7 @@ RUN echo "Starting..." && \
     apk update && \
     apk add --no-cache nftables ca-certificates tzdata git && \
     cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
-	echo ${TZ} > /etc/timezone && \
+    echo ${TZ} > /etc/timezone && \
     mkdir /mihomo/config && \
     wget -O /mihomo/config/Country.mmdb https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country-lite.mmdb && \
     wget -O /mihomo/config/geosite.dat https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite-lite.dat && \
