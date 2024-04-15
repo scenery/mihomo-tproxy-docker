@@ -20,6 +20,7 @@ services:
     volumes:
       - './config.yaml:/mihomo/config/config.yaml'
       - './cn_cidr.txt:/mihomo/config/cn_cidr.txt'
+      - './resolv.conf:/etc/resolv.conf'
 
 networks:
   mihomovlan:
