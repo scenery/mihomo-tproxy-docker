@@ -23,6 +23,11 @@ setup_nftables() {
     # Mark all other packets as 1 and forward to port 7893
     nft add rule clash PREROUTING meta l4proto {tcp, udp} mark set 1 tproxy to :7893 accept
 
+    # DNS
+    nft add chain clash PREROUTING_DNS { type nat hook prerouting priority -100 \; }
+    nft add rule clash PREROUTING_DNS meta mark 0xff return
+    nft add rule clash PREROUTING_DNS udp dport 53 redirect to :1053
+
     # Disable QUIC (UDP 443)
     if [ "$QUIC" = "false" ]; then
         nft add chain clash INPUT { type filter hook input priority 0 \; }
@@ -35,6 +40,10 @@ setup_nftables() {
         nft add rule clash OUTPUT ip daddr {0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/4, 240.0.0.0/4} return
         nft add rule clash OUTPUT mark 0xff return
         nft add rule clash OUTPUT meta l4proto {tcp, udp} mark set 1 accept
+        # DNS
+        nft add chain clash OUTPUT_DNS { type nat hook output priority -100 \; }
+        nft add rule clash OUTPUT_DNS meta mark 0xff return
+        nft add rule clash OUTPUT_DNS udp dport 53 redirect to :1053
     fi
 
     # Redirect connected requests to optimize TPROXY performance
