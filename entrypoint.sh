@@ -61,7 +61,7 @@ if [[ "$QUIC" != "true" && "$QUIC" != "false" ]]; then
     exit 1
 fi
 
-if [[ "$CONTAINER_PROXY" != "true" && "$QUIC" != "false" ]]; then
+if [[ "$CONTAINER_PROXY" != "true" && "$CONTAINER_PROXY" != "false" ]]; then
     echo "Error: '\$CONTAINER_PROXY' Must be 'true' or 'false'."
     exit 1
 fi
