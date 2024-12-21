@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   mihomo:
     image: mihomo:latest
@@ -11,7 +9,7 @@ services:
     cap_add:
       - NET_ADMIN
     networks:
-      homenet:
+      mihomovlan: # macvlan name
         ipv4_address: 192.168.2.2 # container (gateway) ip address
     environment:
       QUIC: "false" # allow quic (udp 443)
