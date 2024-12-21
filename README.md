@@ -41,7 +41,7 @@ services:
     cap_add:
       - NET_ADMIN
     networks:
-      homenet:
+      mihomovlan:
         ipv4_address: 192.168.2.2
     environment:
       QUIC: "true" # allow quic (udp 443)
