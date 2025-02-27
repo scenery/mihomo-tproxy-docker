@@ -10,8 +10,6 @@ You can build and deploy this image on your local Linux device, such as a Raspbe
 
 By default, the gateway itself (docker container) does not forward traffic to TPROXY. If you are using the redir-host mode and do not have a clean DNS server that can be directly connected to, consider setting `CONTAINER_PROXY` to `true` within the `docker-compose.yaml` file.
 
-If IPv6 usage is required, please edit your Docker configuration, macvlan configuration, and relevant sections in the `entrypoint.sh` file. Further detailed explanations will not be provided here.
-
 ### Requirements
 
 - AMD64 or ARM64 (AArch64) based Linux devices
@@ -68,6 +66,23 @@ networks:
         - subnet: "192.168.2.0/24"
           ip_range: "192.168.2.64/26"
           gateway: "192.168.2.1"
+```
+
+If you need to connect to an IPv6 server, modify the networks config as follows:
+```
+networks:
+  mihomovlan:
+    name: mihomovlan
+    driver: macvlan
+    driver_opts:
+      parent: eth0
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: "192.168.2.0/24"
+          ip_range: "192.168.2.64/26"
+          gateway: "192.168.2.1"
+        - subnet: "2001:db8:1::/64"
 ```
 
 !!! Configure  `config.yaml` of mihomo before you start the container. Please refer to the comments in the configuration for modifications.
