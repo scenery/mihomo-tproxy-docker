@@ -25,6 +25,12 @@ Download or clone this repository to your local machine, and then build the imag
 docker build -t mihomo:latest .
 ```
 
+If you encounter network issues during the build process, try using the host network mode:
+
+```
+docker build --network=host -t mihomo:latest .
+```
+
 ## Usage
 
 Configure  `docker-compose.yaml` file:
