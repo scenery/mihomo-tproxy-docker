@@ -15,7 +15,7 @@ setup_nftables() {
     # Skip CN IP address
     if [ "$SKIP_CNIP" = "true" ]; then
         CN_IP=$(awk '!/^#/ {ip=ip $1 ", "} END {sub(/, $/, "", ip); print ip}' /mihomo/config/cn_cidr.txt)
-        nft add rule clash PREROUTING ip daddr {$CN_IP} return
+        nft add rule clash PREROUTING ip daddr {$CN_IP} meta mark set 2 return
     fi
 
     # Avoid circular redirect
@@ -69,6 +69,20 @@ fi
 # Add policy routing to packets marked as 1 delivered locally
 ip rule add fwmark 1 lookup 100
 ip route add local 0.0.0.0/0 dev lo table 100
+
+# Add policy routing to packets marked as 2 delivered gateway
+if [ "$SKIP_CNIP" = "true" ]; then
+    GATEWAY=$(ip route | awk '/default/ {print $3}')
+    IFACE=$(ip route | awk '/default/ {print $5}')
+    
+    if [ -z "$GATEWAY" ] || [ -z "$IFACE" ]; then
+        echo "Error: failed to get gateway address or iface name! "
+        exit 1
+    fi
+
+    ip rule add fwmark 2 lookup 200
+    ip route add default via $GATEWAY dev $IFACE table 200
+fi
 
 setup_nftables
 
