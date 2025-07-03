@@ -7,7 +7,7 @@
 MIHOMO_PORT=7893
 MIHOMO_DNS_PORT=1053
 MIHOMO_MARK=0xff
-TPROXY_MARK=1
+TPROXY_MARK=0x1
 ROUTE_TABLE=100
 
 CN_IP_FILE="/mihomo/config/cn_cidr.txt"
@@ -168,8 +168,13 @@ if [ "$CONTAINER_PROXY" != "true" ] && [ "$CONTAINER_PROXY" != "false" ]; then
 fi
 
 # Add policy routing to packets marked as 1 delivered locally
-ip rule add fwmark $TPROXY_MARK lookup $ROUTE_TABLE
-ip route add local default dev lo table $ROUTE_TABLE
+if ! ip rule list | grep -q "fwmark $TPROXY_MARK lookup $ROUTE_TABLE"; then
+    ip rule add fwmark $TPROXY_MARK lookup $ROUTE_TABLE
+fi
+
+if ! ip route show table $ROUTE_TABLE | grep -q "local default dev lo"; then
+    ip route add local default dev lo table $ROUTE_TABLE
+fi
 
 setup_nftables
 
