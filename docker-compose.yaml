@@ -14,7 +14,7 @@ services:
     environment:
       QUIC: "false" # allow quic (udp 443)
       CONTAINER_PROXY: "false" # forward the container's own traffic to tproxy
-      SKIP_CNIP: "false" # bypass forwarding cn ip to the mihomo kernel (only valid for redir-host mode)
+      BYPASS_CN: "false" # bypass cn ip to mihomo kernel (valid only in redir-host mode; fake-ip mode requires DNS routing)
     volumes:
       - './config.yaml:/mihomo/config/config.yaml'
       - './cn_cidr.txt:/mihomo/config/cn_cidr.txt'
