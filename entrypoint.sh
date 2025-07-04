@@ -138,13 +138,13 @@ EOF
 
     echo "}" >> "$MAIN_NFT"
 
-    # return to nat
+    # Masquerade non-tproxy traffic going out of default interface
     cat >> "$MAIN_NFT" <<EOF
 
 table ip nat {
   chain POSTROUTING {
     type nat hook postrouting priority 100; policy accept;
-    oifname "$DEFAULT_IFACE" masquerade
+    meta mark != $TPROXY_MARK oifname "$DEFAULT_IFACE" masquerade
   }
 }
 EOF
